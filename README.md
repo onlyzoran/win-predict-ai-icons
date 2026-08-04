@@ -79,9 +79,15 @@ import { IconHockey, sportIcons } from '@onlyzoran/win-predict-ai-icons'
 export { sportIcons } from '@onlyzoran/win-predict-ai-icons'
 ```
 
+### UI-набор
+
+Outline (`size` / `stroke`): `IconArrowLeft`, `IconArrowsSort`, `IconLogin`, `IconMoon`, `IconPin`, `IconPinnedOff`, `IconSearch`, `IconSun`, `IconX`.
+
+Filled (`size`, `fill="currentColor"`): `IconBrandGithub`, `IconCircleFilled`.
+
 ## Добавление новой иконки
 
-1. Создайте `src/icons/IconName.vue` по образцу `IconHockey.vue` (viewBox `0 0 24 24`, props `size`/`stroke`, классы `tabler-icon tabler-icon-name`).
+1. Создайте `src/icons/IconName.vue` по образцу `IconHockey.vue` (viewBox `0 0 24 24`, props `size`/`stroke`, классы `tabler-icon tabler-icon-name`). Для filled — `fill="currentColor"`, только `size`.
 2. Экспортируйте в `src/index.ts` (и при необходимости добавьте в `src/sportIcons.ts`).
 3. Соберите и опубликуйте новую версию (`npm version` + `npm publish`).
 
@@ -120,7 +126,7 @@ npm publish
 
 ```
 src/
-  icons/           # Vue SFC иконок (sport-набор)
+  icons/           # Vue SFC иконок (sport + UI)
   sportIcons.ts    # карта Sport → компонент
   types.ts         # общие IconProps
   index.ts         # публичные named exports

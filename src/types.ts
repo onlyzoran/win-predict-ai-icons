@@ -1,6 +1,6 @@
 /**
- * Shared props for Tabler-style stroke icons in this package.
- * Keep new icons aligned with this shape (24×24 viewBox, size + stroke).
+ * Shared props for Tabler-style icons in this package.
+ * Outline: 24×24 viewBox, size + stroke. Filled: size only, fill="currentColor".
  */
 export interface IconProps {
   size?: number | string

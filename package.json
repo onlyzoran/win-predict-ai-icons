@@ -18,7 +18,9 @@
   },
   "sideEffects": false,
   "scripts": {
+    "dev": "vite --config playground/vite.config.ts",
     "build": "vite build && vue-tsc --declaration --emitDeclarationOnly -p tsconfig.build.json",
+    "build:playground": "vite build --config playground/vite.config.ts",
     "type-check": "vue-tsc --noEmit -p tsconfig.build.json",
     "prepublishOnly": "npm run build"
   },

@@ -91,15 +91,29 @@ Filled (`size`, `fill="currentColor"`): `IconBrandGithub`, `IconCircleFilled`.
 2. Экспортируйте в `src/index.ts` (и при необходимости добавьте в `src/sportIcons.ts`).
 3. Соберите и опубликуйте новую версию (`npm version` + `npm publish`).
 
+## Превью иконок
+
+Локально:
+
+```bash
+npm install
+npm run dev
+```
+
+Откроется галерея на `http://localhost:5173` (поиск, size/stroke, тёмная тема, клик копирует имя).
+
+Публичный каталог: [GitHub Pages](https://onlyzoran.github.io/win-predict-ai-icons/) (деплой из `main` через Actions). В настройках репозитория: **Settings → Pages → Source: GitHub Actions**.
+
 ## Разработка
 
 ```bash
 npm install
 npm run build
+npm run build:playground
 npm run type-check
 ```
 
-Сборка: Vite library mode → `dist/index.js` + декларации через `vue-tsc`.
+Сборка: Vite library mode → `dist/index.js` + декларации через `vue-tsc`. Playground → `playground-dist/` (для Pages).
 
 ## Публикация в GitHub Packages
 
@@ -130,5 +144,6 @@ src/
   sportIcons.ts    # карта Sport → компонент
   types.ts         # общие IconProps
   index.ts         # публичные named exports
+playground/        # галерея для локального просмотра и GitHub Pages
 dist/              # артефакты сборки (публикуются в пакет)
 ```

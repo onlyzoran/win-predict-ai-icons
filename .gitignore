@@ -3,6 +3,7 @@ node_modules/
 
 # Build
 dist/
+playground-dist/
 
 # Logs
 *.log

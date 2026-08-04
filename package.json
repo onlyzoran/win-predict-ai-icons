@@ -1,0 +1,54 @@
+{
+  "name": "@onlyzoran/win-predict-ai-icons",
+  "version": "0.1.0",
+  "description": "Vue 3 icon components for Win Predict AI (Tabler-style)",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "vite build && vue-tsc --declaration --emitDeclarationOnly -p tsconfig.build.json",
+    "type-check": "vue-tsc --noEmit -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.0",
+    "vue": "^3.5.40",
+    "vue-tsc": "^3.1.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/onlyzoran/win-predict-ai-icons.git"
+  },
+  "homepage": "https://github.com/onlyzoran/win-predict-ai-icons#readme",
+  "bugs": {
+    "url": "https://github.com/onlyzoran/win-predict-ai-icons/issues"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "vue",
+    "icons",
+    "tabler",
+    "win-predict-ai"
+  ]
+}

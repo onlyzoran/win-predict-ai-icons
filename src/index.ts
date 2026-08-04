@@ -1,3 +1,12 @@
 export type { IconProps } from './types'
+export type { SportIconKey } from './sportIcons'
+export { sportIcons } from './sportIcons'
 
+export { default as IconBallAmericanFootball } from './icons/IconBallAmericanFootball.vue'
+export { default as IconBallBaseball } from './icons/IconBallBaseball.vue'
+export { default as IconBallBasketball } from './icons/IconBallBasketball.vue'
+export { default as IconBallFootball } from './icons/IconBallFootball.vue'
+export { default as IconFlag } from './icons/IconFlag.vue'
+export { default as IconGolf } from './icons/IconGolf.vue'
 export { default as IconHockey } from './icons/IconHockey.vue'
+export { default as IconSteeringWheel } from './icons/IconSteeringWheel.vue'

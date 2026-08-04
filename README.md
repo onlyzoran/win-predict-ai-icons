@@ -44,27 +44,46 @@ Peer dependency: `vue` ^3.3.
 
 ```vue
 <script setup lang="ts">
-import { IconHockey } from '@onlyzoran/win-predict-ai-icons'
+import { IconHockey, sportIcons } from '@onlyzoran/win-predict-ai-icons'
 </script>
 
 <template>
   <IconHockey />
   <IconHockey :size="32" :stroke="1.5" class="text-blue-500" />
+  <component :is="sportIcons.football" :size="20" />
 </template>
 ```
 
 Цвет наследуется через `stroke="currentColor"` (как у Tabler).
 
+### Sport-набор
+
+Иконки и карта `sportIcons` (ключи как в `win-predict-ai`):
+
+| Key | Component |
+| --- | --- |
+| `football` | `IconBallFootball` |
+| `basketball` | `IconBallBasketball` |
+| `americanFootball` | `IconBallAmericanFootball` |
+| `hockey` | `IconHockey` |
+| `baseball` | `IconBallBaseball` |
+| `motorsport` | `IconSteeringWheel` |
+| `golf` | `IconGolf` |
+| `politics` | `IconFlag` |
+
+Пути Tabler-иконок скопированы из [@tabler/icons](https://github.com/tabler/tabler-icons) (MIT); `IconHockey` — кастомная.
+
+В потребителе можно упростить `sportIcons.ts` до:
+
+```ts
+export { sportIcons } from '@onlyzoran/win-predict-ai-icons'
+```
+
 ## Добавление новой иконки
 
 1. Создайте `src/icons/IconName.vue` по образцу `IconHockey.vue` (viewBox `0 0 24 24`, props `size`/`stroke`, классы `tabler-icon tabler-icon-name`).
-2. Экспортируйте в `src/index.ts`:
-
-```ts
-export { default as IconName } from './icons/IconName.vue'
-```
-
-3. Соберите и опубликуйте новую версию.
+2. Экспортируйте в `src/index.ts` (и при необходимости добавьте в `src/sportIcons.ts`).
+3. Соберите и опубликуйте новую версию (`npm version` + `npm publish`).
 
 ## Разработка
 
@@ -101,9 +120,9 @@ npm publish
 
 ```
 src/
-  icons/          # Vue SFC иконок
-    IconHockey.vue
-  types.ts        # общие IconProps
-  index.ts        # публичные named exports
-dist/             # артефакты сборки (публикуются в пакет)
+  icons/           # Vue SFC иконок (sport-набор)
+  sportIcons.ts    # карта Sport → компонент
+  types.ts         # общие IconProps
+  index.ts         # публичные named exports
+dist/              # артефакты сборки (публикуются в пакет)
 ```

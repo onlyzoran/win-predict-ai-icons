@@ -1,0 +1,128 @@
+name: Release package
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version bump type
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: minor
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: release-package
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    # GITHUB_TOKEN pushes do not re-trigger workflows; still skip bot release commits on push.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      !startsWith(github.event.head_commit.message, 'chore(release):')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: '@onlyzoran'
+
+      - run: npm ci
+
+      - name: Resolve bump type
+        id: bump
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          INPUT_BUMP: ${{ inputs.bump }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "type=${INPUT_BUMP}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if echo "$COMMIT_MSG" | grep -qiE '\[skip release\]|\[no release\]'; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if echo "$COMMIT_MSG" | grep -qiE '\[major\]'; then
+            echo "type=major" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if echo "$COMMIT_MSG" | grep -qiE '\[minor\]'; then
+            echo "type=minor" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if echo "$COMMIT_MSG" | grep -qiE '\[patch\]'; then
+            echo "type=patch" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          RANGE=""
+          if LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null); then
+            RANGE="${LAST_TAG}...HEAD"
+            echo "Comparing icons since tag ${LAST_TAG}"
+          elif [ -n "$BEFORE_SHA" ] && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            RANGE="${BEFORE_SHA}...HEAD"
+            echo "Comparing icons since previous main tip ${BEFORE_SHA}"
+          else
+            echo "No baseline for icon diff; defaulting to patch"
+            echo "type=patch" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          NEW_ICONS=$(git diff --name-only --diff-filter=A ${RANGE} -- 'src/icons/*.vue' || true)
+
+          if [ -n "$NEW_ICONS" ]; then
+            echo "New icons:"
+            echo "$NEW_ICONS"
+            echo "type=minor" >> "$GITHUB_OUTPUT"
+          else
+            echo "No new icons since last release"
+            echo "type=patch" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip release
+        if: steps.bump.outputs.skip == 'true'
+        run: echo "Release skipped by commit message"
+
+      - name: Configure git
+        if: steps.bump.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        if: steps.bump.outputs.skip != 'true'
+        run: |
+          npm version "${{ steps.bump.outputs.type }}" -m "chore(release): %s"
+
+      - name: Publish to GitHub Packages
+        if: steps.bump.outputs.skip != 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm publish
+
+      - name: Push version commit and tag
+        if: steps.bump.outputs.skip != 'true'
+        run: |
+          git push
+          git push --tags

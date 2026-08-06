@@ -6,6 +6,7 @@ export { default as IconBallAmericanFootball } from './icons/IconBallAmericanFoo
 export { default as IconBallBaseball } from './icons/IconBallBaseball.vue'
 export { default as IconBallBasketball } from './icons/IconBallBasketball.vue'
 export { default as IconBallFootball } from './icons/IconBallFootball.vue'
+export { default as IconBallRugby } from './icons/IconBallRugby.vue'
 export { default as IconBallTennis } from './icons/IconBallTennis.vue'
 export { default as IconFlag } from './icons/IconFlag.vue'
 export { default as IconGolf } from './icons/IconGolf.vue'

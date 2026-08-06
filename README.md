@@ -70,8 +70,10 @@ import { IconHockey, sportIcons } from '@onlyzoran/win-predict-ai-icons'
 | `motorsport` | `IconSteeringWheel` |
 | `golf` | `IconGolf` |
 | `politics` | `IconFlag` |
+| `tennis` | `IconBallTennis` |
+| `rugby` | `IconBallRugby` |
 
-Пути Tabler-иконок скопированы из [@tabler/icons](https://github.com/tabler/tabler-icons) (MIT); `IconHockey` — кастомная.
+Пути Tabler-иконок скопированы из [@tabler/icons](https://github.com/tabler/tabler-icons) (MIT); `IconHockey` и `IconBallRugby` — кастомные.
 
 В потребителе можно упростить `sportIcons.ts` до:
 
@@ -102,7 +104,16 @@ npm run dev
 
 Откроется галерея на `http://localhost:5173` (поиск, size/stroke, тёмная тема, клик копирует имя).
 
-Публичный каталог: [GitHub Pages](https://onlyzoran.github.io/win-predict-ai-icons/) (деплой из `main` через Actions). В настройках репозитория: **Settings → Pages → Source: GitHub Actions**.
+Публичный каталог: [GitHub Pages](https://onlyzoran.github.io/win-predict-ai-icons/) (деплой из `main` на ветку `gh-pages`).
+
+**Настройки репозитория (один раз):**
+
+1. **Settings → Pages → Source:** Deploy from a branch → Branch `gh-pages` / `/ (root)`.
+2. **Settings → Actions → General → Workflow permissions:** Read and write permissions.
+
+Для pull request Actions собирает playground и деплоит превью; в PR появится комментарий со ссылкой вида  
+`https://onlyzoran.github.io/win-predict-ai-icons/pr-preview/pr-<N>/`.  
+После закрытия PR превью удаляется.
 
 ## Разработка
 
@@ -117,24 +128,27 @@ npm run type-check
 
 ## Публикация в GitHub Packages
 
-1. Убедитесь, что в `package.json` указаны:
+После мержа в `main` workflow **Release package** сам поднимает версию и публикует пакет.
 
-   - `"name": "@onlyzoran/win-predict-ai-icons"`
-   - `"publishConfig.registry": "https://npm.pkg.github.com"`
+| Как задать bump | Результат |
+| --- | --- |
+| новые файлы в `src/icons/` с прошлого релиза | `minor` |
+| без новых иконок | `patch` |
+| `[major]` / `[minor]` / `[patch]` в сообщении коммита | принудительно |
+| `[skip release]` | не публиковать |
 
-2. В корне пакета уже есть `.npmrc` с scope `@onlyzoran` и `${NODE_AUTH_TOKEN}` (секреты в репозиторий не кладите).
+Вручную: **Actions → Release package → Run workflow** (выбор patch / minor / major).
 
-3. PAT с `write:packages` (и доступом к org/user `onlyzoran`):
+Локально (если нужно):
 
 ```bash
-export NODE_AUTH_TOKEN=ghp_xxxxxxxx
-npm run build
+export NODE_AUTH_TOKEN=ghp_xxxxxxxx   # write:packages
+npm version patch|minor|major
 npm publish
+git push && git push --tags
 ```
 
-`prepublishOnly` автоматически запускает `build` перед publish.
-
-4. После публикации bump версии (`npm version patch|minor|major`) и снова `npm publish`.
+`prepublishOnly` запускает `build` перед publish. Registry: `https://npm.pkg.github.com` (см. `.npmrc`).
 
 ## Структура
 

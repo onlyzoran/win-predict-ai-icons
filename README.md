@@ -72,8 +72,9 @@ import { IconHockey, sportIcons } from '@onlyzoran/win-predict-ai-icons'
 | `politics` | `IconFlag` |
 | `tennis` | `IconBallTennis` |
 | `rugby` | `IconBallRugby` |
+| `boxing` | `IconBoxingGlove` |
 
-Пути Tabler-иконок скопированы из [@tabler/icons](https://github.com/tabler/tabler-icons) (MIT); `IconHockey` и `IconBallRugby` — кастомные.
+Пути Tabler-иконок скопированы из [@tabler/icons](https://github.com/tabler/tabler-icons) (MIT); `IconHockey` и `IconBallRugby` — кастомные; `IconBoxingGlove` — из [Hugeicons](https://hugeicons.com/) `boxing-glove-01` (MIT).
 
 В потребителе можно упростить `sportIcons.ts` до:
 

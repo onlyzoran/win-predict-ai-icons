@@ -70,8 +70,10 @@ import { IconHockey, sportIcons } from '@onlyzoran/win-predict-ai-icons'
 | `motorsport` | `IconSteeringWheel` |
 | `golf` | `IconGolf` |
 | `politics` | `IconFlag` |
+| `tennis` | `IconBallTennis` |
+| `rugby` | `IconBallRugby` |
 
-Пути Tabler-иконок скопированы из [@tabler/icons](https://github.com/tabler/tabler-icons) (MIT); `IconHockey` — кастомная.
+Пути Tabler-иконок скопированы из [@tabler/icons](https://github.com/tabler/tabler-icons) (MIT); `IconHockey` и `IconBallRugby` — кастомные.
 
 В потребителе можно упростить `sportIcons.ts` до:
 
@@ -102,7 +104,16 @@ npm run dev
 
 Откроется галерея на `http://localhost:5173` (поиск, size/stroke, тёмная тема, клик копирует имя).
 
-Публичный каталог: [GitHub Pages](https://onlyzoran.github.io/win-predict-ai-icons/) (деплой из `main` через Actions). В настройках репозитория: **Settings → Pages → Source: GitHub Actions**.
+Публичный каталог: [GitHub Pages](https://onlyzoran.github.io/win-predict-ai-icons/) (деплой из `main` на ветку `gh-pages`).
+
+**Настройки репозитория (один раз):**
+
+1. **Settings → Pages → Source:** Deploy from a branch → Branch `gh-pages` / `/ (root)`.
+2. **Settings → Actions → General → Workflow permissions:** Read and write permissions.
+
+Для pull request Actions собирает playground и деплоит превью; в PR появится комментарий со ссылкой вида  
+`https://onlyzoran.github.io/win-predict-ai-icons/pr-preview/pr-<N>/`.  
+После закрытия PR превью удаляется.
 
 ## Разработка
 

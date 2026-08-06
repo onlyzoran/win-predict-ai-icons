@@ -8,9 +8,10 @@ on:
       - synchronize
       - closed
 
+# Share group with main Pages deploy to avoid racing pushes to gh-pages
 concurrency:
-  group: pages-preview-${{ github.event.number }}
-  cancel-in-progress: true
+  group: github-pages
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -20,9 +21,9 @@ jobs:
   deploy-preview:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         if: github.event.action != 'closed'
         with:
           node-version: 22
@@ -42,4 +43,5 @@ jobs:
           source-dir: ./playground-dist/
           preview-branch: gh-pages
           umbrella-dir: pr-preview
-          wait-for-pages-deployment: true
+          # Avoid failing the job when Pages briefly errors during concurrent updates
+          wait-for-pages-deployment: false

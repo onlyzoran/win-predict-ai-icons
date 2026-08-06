@@ -9,15 +9,15 @@ permissions:
   contents: write
 
 concurrency:
-  group: pages-main
+  group: github-pages
   cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -26,9 +26,11 @@ jobs:
         env:
           PLAYGROUND_BASE: /win-predict-ai-icons/
         run: npm run build:playground
-      # keep_files preserves pr-preview/* from PR preview deploys
-      - uses: peaceiris/actions-gh-pages@v4
+      # clean + clean-exclude: only playground output, keep open PR previews
+      - uses: JamesIves/github-pages-deploy-action@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./playground-dist
-          keep_files: true
+          folder: playground-dist
+          branch: gh-pages
+          clean: true
+          clean-exclude: |
+            pr-preview

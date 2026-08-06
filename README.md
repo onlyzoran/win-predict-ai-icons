@@ -132,10 +132,9 @@ npm run type-check
 
 | Как задать bump | Результат |
 | --- | --- |
-| по умолчанию | `minor` |
-| `[patch]` / `fix:` в сообщении коммита мержа | `patch` |
-| `[minor]` / `feat:` | `minor` |
-| `[major]` | `major` |
+| новые файлы в `src/icons/` с прошлого релиза | `minor` |
+| без новых иконок | `patch` |
+| `[major]` / `[minor]` / `[patch]` в сообщении коммита | принудительно |
 | `[skip release]` | не публиковать |
 
 Вручную: **Actions → Release package → Run workflow** (выбор patch / minor / major).

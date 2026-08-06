@@ -10,7 +10,7 @@ import IconFlag from './icons/IconFlag.vue'
 import IconGolf from './icons/IconGolf.vue'
 import IconHockey from './icons/IconHockey.vue'
 import IconSteeringWheel from './icons/IconSteeringWheel.vue'
-import IconWaterPoloA from './icons/IconWaterPoloA.vue'
+import IconWaterPolo from './icons/IconWaterPolo.vue'
 
 /** Keys aligned with win-predict-ai `Sport` / `sportIcons`. */
 export type SportIconKey =
@@ -39,5 +39,5 @@ export const sportIcons: Record<SportIconKey, Component> = {
   tennis: IconBallTennis,
   rugby: IconBallRugby,
   boxing: IconBoxingGlove,
-  waterPolo: IconWaterPoloA,
+  waterPolo: IconWaterPolo,
 }

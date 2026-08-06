@@ -1,0 +1,98 @@
+name: Release package
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version bump type
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: minor
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: release-package
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    # GITHUB_TOKEN pushes do not re-trigger workflows; still skip bot release commits on push.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      !startsWith(github.event.head_commit.message, 'chore(release):')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: '@onlyzoran'
+
+      - run: npm ci
+
+      - name: Resolve bump type
+        id: bump
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          INPUT_BUMP: ${{ inputs.bump }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "type=${INPUT_BUMP}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if echo "$COMMIT_MSG" | grep -qiE '\[skip release\]|\[no release\]'; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if echo "$COMMIT_MSG" | grep -qiE '\[major\]'; then
+            echo "type=major" >> "$GITHUB_OUTPUT"
+          elif echo "$COMMIT_MSG" | grep -qiE '\[minor\]|^feat(\(|:)|^feat!'; then
+            echo "type=minor" >> "$GITHUB_OUTPUT"
+          elif echo "$COMMIT_MSG" | grep -qiE '\[patch\]|^fix(\(|:)'; then
+            echo "type=patch" >> "$GITHUB_OUTPUT"
+          else
+            # New icons / API surface → minor by default
+            echo "type=minor" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip release
+        if: steps.bump.outputs.skip == 'true'
+        run: echo "Release skipped by commit message"
+
+      - name: Configure git
+        if: steps.bump.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        if: steps.bump.outputs.skip != 'true'
+        run: npm version "${{ steps.bump.outputs.type }}" -m "chore(release): %s"
+
+      - name: Publish to GitHub Packages
+        if: steps.bump.outputs.skip != 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm publish
+
+      - name: Push version commit and tag
+        if: steps.bump.outputs.skip != 'true'
+        run: |
+          git push
+          git push --tags

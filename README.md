@@ -128,24 +128,28 @@ npm run type-check
 
 ## Публикация в GitHub Packages
 
-1. Убедитесь, что в `package.json` указаны:
+После мержа в `main` workflow **Release package** сам поднимает версию и публикует пакет.
 
-   - `"name": "@onlyzoran/win-predict-ai-icons"`
-   - `"publishConfig.registry": "https://npm.pkg.github.com"`
+| Как задать bump | Результат |
+| --- | --- |
+| по умолчанию | `minor` |
+| `[patch]` / `fix:` в сообщении коммита мержа | `patch` |
+| `[minor]` / `feat:` | `minor` |
+| `[major]` | `major` |
+| `[skip release]` | не публиковать |
 
-2. В корне пакета уже есть `.npmrc` с scope `@onlyzoran` и `${NODE_AUTH_TOKEN}` (секреты в репозиторий не кладите).
+Вручную: **Actions → Release package → Run workflow** (выбор patch / minor / major).
 
-3. PAT с `write:packages` (и доступом к org/user `onlyzoran`):
+Локально (если нужно):
 
 ```bash
-export NODE_AUTH_TOKEN=ghp_xxxxxxxx
-npm run build
+export NODE_AUTH_TOKEN=ghp_xxxxxxxx   # write:packages
+npm version patch|minor|major
 npm publish
+git push && git push --tags
 ```
 
-`prepublishOnly` автоматически запускает `build` перед publish.
-
-4. После публикации bump версии (`npm version patch|minor|major`) и снова `npm publish`.
+`prepublishOnly` запускает `build` перед publish. Registry: `https://npm.pkg.github.com` (см. `.npmrc`).
 
 ## Структура
 

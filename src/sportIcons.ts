@@ -3,6 +3,7 @@ import IconBallAmericanFootball from './icons/IconBallAmericanFootball.vue'
 import IconBallBaseball from './icons/IconBallBaseball.vue'
 import IconBallBasketball from './icons/IconBallBasketball.vue'
 import IconBallFootball from './icons/IconBallFootball.vue'
+import IconBallTennis from './icons/IconBallTennis.vue'
 import IconFlag from './icons/IconFlag.vue'
 import IconGolf from './icons/IconGolf.vue'
 import IconHockey from './icons/IconHockey.vue'
@@ -18,6 +19,7 @@ export type SportIconKey =
   | 'motorsport'
   | 'golf'
   | 'politics'
+  | 'tennis'
 
 export const sportIcons: Record<SportIconKey, Component> = {
   football: IconBallFootball,
@@ -28,4 +30,5 @@ export const sportIcons: Record<SportIconKey, Component> = {
   motorsport: IconSteeringWheel,
   golf: IconGolf,
   politics: IconFlag,
+  tennis: IconBallTennis,
 }

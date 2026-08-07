@@ -13,6 +13,7 @@ export { default as IconFlag } from './icons/IconFlag.vue'
 export { default as IconGolf } from './icons/IconGolf.vue'
 export { default as IconHockey } from './icons/IconHockey.vue'
 export { default as IconSteeringWheel } from './icons/IconSteeringWheel.vue'
+export { default as IconVolleyball } from './icons/IconVolleyball.vue'
 export { default as IconWaterPolo } from './icons/IconWaterPolo.vue'
 
 export { default as IconArrowLeft } from './icons/IconArrowLeft.vue'

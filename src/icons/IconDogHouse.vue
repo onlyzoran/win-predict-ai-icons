@@ -9,7 +9,7 @@ withDefaults(
 </script>
 
 <template>
-  <!-- Source: Lucide birdhouse (ISC) -->
+  <!-- Source: Tabler home-2 (MIT) -->
   <svg
     xmlns="http://www.w3.org/2000/svg"
     :width="size"
@@ -20,13 +20,10 @@ withDefaults(
     :stroke-width="stroke"
     stroke-linecap="round"
     stroke-linejoin="round"
-    class="tabler-icon tabler-icon-dog-house-a"
+    class="tabler-icon tabler-icon-dog-house"
   >
-    <path d="M12 18v4" />
-    <path d="m17 18 1.956-11.468" />
-    <path d="m3 8 7.82-5.615a2 2 0 0 1 2.36 0L21 8" />
-    <path d="M4 18h16" />
-    <path d="M7 18 5.044 6.532" />
-    <circle cx="12" cy="10" r="2" />
+    <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
+    <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+    <path d="M10 12h4v4h-4l0 -4" />
   </svg>
 </template>

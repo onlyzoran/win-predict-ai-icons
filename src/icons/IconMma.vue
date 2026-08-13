@@ -20,7 +20,7 @@ withDefaults(
     :stroke-width="stroke"
     stroke-linecap="round"
     stroke-linejoin="round"
-    class="tabler-icon tabler-icon-mma-a"
+    class="tabler-icon tabler-icon-mma"
   >
     <path d="M3 9l4.5 1l3 2.5" />
     <path d="M13 21v-8l3 -5.5" />

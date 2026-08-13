@@ -9,7 +9,7 @@ withDefaults(
 </script>
 
 <template>
-  <!-- Source: Tabler layout-navbar-expand (MIT) -->
+  <!-- Source: Tabler eye-closed (MIT) -->
   <svg
     xmlns="http://www.w3.org/2000/svg"
     :width="size"
@@ -20,10 +20,12 @@ withDefaults(
     :stroke-width="stroke"
     stroke-linecap="round"
     stroke-linejoin="round"
-    class="tabler-icon tabler-icon-card-show-d"
+    class="tabler-icon tabler-icon-eye-off-a"
   >
-    <path d="M4 18v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2" />
-    <path d="M4 9h16" />
-    <path d="M10 14l2 2l2 -2" />
+    <path d="M21 9c-2.4 2.667 -5.4 4 -9 4c-3.6 0 -6.6 -1.333 -9 -4" />
+    <path d="M3 15l2.5 -3.8" />
+    <path d="M21 14.976l-2.492 -3.776" />
+    <path d="M9 17l.5 -4" />
+    <path d="M15 17l-.5 -4" />
   </svg>
 </template>

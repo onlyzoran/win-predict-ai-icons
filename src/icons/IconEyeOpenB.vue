@@ -9,7 +9,7 @@ withDefaults(
 </script>
 
 <template>
-  <!-- Source: Lucide panel-bottom-close (ISC) -->
+  <!-- Source: Lucide eye (ISC) -->
   <svg
     xmlns="http://www.w3.org/2000/svg"
     :width="size"
@@ -20,10 +20,9 @@ withDefaults(
     :stroke-width="stroke"
     stroke-linecap="round"
     stroke-linejoin="round"
-    class="tabler-icon tabler-icon-card-hide-c"
+    class="tabler-icon tabler-icon-eye-open-b"
   >
-    <rect width="18" height="18" x="3" y="3" rx="2" />
-    <path d="M3 15h18" />
-    <path d="m15 8-3 3-3-3" />
+    <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+    <circle cx="12" cy="12" r="3" />
   </svg>
 </template>

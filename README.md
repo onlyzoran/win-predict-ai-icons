@@ -84,7 +84,7 @@ export { sportIcons } from '@onlyzoran/win-predict-ai-icons'
 
 ### UI-набор
 
-Outline (`size` / `stroke`): `IconArrowLeft`, `IconArrowsSort`, `IconGripVertical`, `IconLogin`, `IconLogout`, `IconMoon`, `IconPencil`, `IconPin`, `IconPinnedOff`, `IconPlus`, `IconSearch`, `IconSun`, `IconTrash`, `IconX`.
+Outline (`size` / `stroke`): `IconArrowLeft`, `IconArrowsSort`, `IconChartSankey`, `IconGripVertical`, `IconLogin`, `IconLogout`, `IconMoon`, `IconPalette`, `IconPencil`, `IconPin`, `IconPinnedOff`, `IconPlus`, `IconReplace`, `IconSearch`, `IconSun`, `IconTable`, `IconTrash`, `IconX`.
 
 Filled (`size`, `fill="currentColor"`): `IconBrandGithub`, `IconCircleFilled`.
 

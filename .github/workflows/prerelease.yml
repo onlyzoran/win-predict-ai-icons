@@ -1,0 +1,117 @@
+name: Prerelease package
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to publish from
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+  pull-requests: read
+
+concurrency:
+  group: prerelease-package-pr-${{ inputs.pr_number }}
+  cancel-in-progress: false
+
+jobs:
+  prerelease:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve PR head
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          set -euo pipefail
+          meta="$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}" \
+            --jq '{ref:.head.ref,sha:.head.sha,state:.state}')"
+          echo "meta=${meta}"
+          state="$(echo "$meta" | jq -r .state)"
+          if [ "$state" != "open" ]; then
+            echo "PR #${PR_NUMBER} is ${state}; refusing prerelease"
+            exit 1
+          fi
+          echo "ref=$(echo "$meta" | jq -r .ref)" >> "$GITHUB_OUTPUT"
+          echo "sha=$(echo "$meta" | jq -r .sha)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.pr.outputs.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: '@onlyzoran'
+
+      - run: npm ci
+
+      - name: Compute prerelease version
+        id: version
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          SHA: ${{ steps.pr.outputs.sha }}
+        run: |
+          set -euo pipefail
+          base="$(node -p "require('./package.json').version")"
+          # Strip existing prerelease/build metadata so we always derive from the base.
+          base="${base%%-*}"
+          short="$(printf '%s' "$SHA" | cut -c1-7)"
+          ver="${base}-pr.${PR_NUMBER}.${short}"
+          tag="pr-${PR_NUMBER}"
+          echo "version=${ver}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "Publishing ${ver} with dist-tag ${tag}"
+
+      - name: Skip if version already published
+        id: exists
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN || github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          name="$(node -p "require('./package.json').name")"
+          if npm view "${name}@${VERSION}" version >/dev/null 2>&1; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Version ${VERSION} already on registry — skip publish"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set version without git commit
+        if: steps.exists.outputs.skip != 'true'
+        run: npm version "${{ steps.version.outputs.version }}" --no-git-tag-version
+
+      - name: Publish to GitHub Packages
+        if: steps.exists.outputs.skip != 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm publish --tag "${{ steps.version.outputs.tag }}"
+
+      - name: Write summary
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+          SKIP: ${{ steps.exists.outputs.skip }}
+          SHA: ${{ steps.pr.outputs.sha }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          {
+            echo "## Prerelease"
+            echo ""
+            echo "- package: \`$(node -p "require('./package.json').name")\`"
+            echo "- version: \`${VERSION}\`"
+            echo "- dist-tag: \`${TAG}\`"
+            echo "- pr: #${PR_NUMBER}"
+            echo "- sha: \`${SHA}\`"
+            echo "- skipped: \`${SKIP}\`"
+            echo ""
+            echo "PRERELEASE_VERSION=${VERSION}"
+          } >> "$GITHUB_STEP_SUMMARY"

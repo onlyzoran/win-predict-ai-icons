@@ -6,15 +6,14 @@ on:
   workflow_dispatch:
     inputs:
       bump:
-        description: Manual bump before publish (orchestrator normally bumps before merge)
-        required: false
+        description: Version bump type
+        required: true
         type: choice
         options:
-          - skip
           - patch
           - minor
           - major
-        default: skip
+        default: minor
 
 permissions:
   contents: write
@@ -27,77 +26,118 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || !startsWith(github.event.head_commit.message || '', 'chore(release):') }}
+    # GITHUB_TOKEN pushes do not re-trigger workflows; still skip bot release commits on push.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      !startsWith(github.event.head_commit.message, 'chore(release):')
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
           registry-url: https://npm.pkg.github.com
-          scope: "@onlyzoran"
+          scope: '@onlyzoran'
 
       - run: npm ci
+
+      - name: Resolve bump type
+        id: bump
         env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          INPUT_BUMP: ${{ inputs.bump }}
+          BEFORE_SHA: ${{ github.event.before }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "type=${INPUT_BUMP}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if echo "$COMMIT_MSG" | grep -qiE '\[skip release\]|\[no release\]'; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Orchestrator already bumped package.json before merge: publish that version.
+          CUR="$(node -p "require('./package.json').version")"
+          NAME="$(node -p "require('./package.json').name")"
+          if ! npm view "${NAME}@${CUR}" version >/dev/null 2>&1; then
+            echo "Pre-bumped unpublished version ${NAME}@${CUR}"
+            echo "type=keep" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if echo "$COMMIT_MSG" | grep -qiE '\[major\]'; then
+            echo "type=major" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if echo "$COMMIT_MSG" | grep -qiE '\[minor\]'; then
+            echo "type=minor" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if echo "$COMMIT_MSG" | grep -qiE '\[patch\]'; then
+            echo "type=patch" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          RANGE=""
+          if LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null); then
+            RANGE="${LAST_TAG}...HEAD"
+            echo "Comparing icons since tag ${LAST_TAG}"
+          elif [ -n "$BEFORE_SHA" ] && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            RANGE="${BEFORE_SHA}...HEAD"
+            echo "Comparing icons since previous main tip ${BEFORE_SHA}"
+          else
+            echo "No baseline for icon diff; defaulting to patch"
+            echo "type=patch" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          NEW_ICONS=$(git diff --name-only --diff-filter=A ${RANGE} -- 'src/icons/*.vue' || true)
+
+          if [ -n "$NEW_ICONS" ]; then
+            echo "New icons:"
+            echo "$NEW_ICONS"
+            echo "type=minor" >> "$GITHUB_OUTPUT"
+          else
+            echo "No new icons since last release"
+            echo "type=patch" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip release
+        if: steps.bump.outputs.skip == 'true'
+        run: echo "Release skipped by commit message"
 
       - name: Configure git
+        if: steps.bump.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Optional manual bump
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.bump != 'skip' }}
-        run: npm version "${{ inputs.bump }}" -m "chore(release): %s"
-
-      - name: Resolve version
-        id: version
-        env:
-          COMMIT_MSG: ${{ github.event.head_commit.message || '' }}
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Bump version
+        if: steps.bump.outputs.skip != 'true' && steps.bump.outputs.type != 'keep'
         run: |
-          set -euo pipefail
-          if [ "${{ github.event_name }}" = "push" ] && printf '%s' "$COMMIT_MSG" | grep -qiE '\[skip release\]|\[no release\]'; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          VER="$(node -p "require('./package.json').version")"
-          NAME="$(node -p "require('./package.json').name")"
-          echo "version=${VER}" >> "$GITHUB_OUTPUT"
-          echo "Resolved ${NAME}@${VER}"
-
-          if npm view "${NAME}@${VER}" version >/dev/null 2>&1; then
-            echo "Package already published"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if git rev-parse "v${VER}" >/dev/null 2>&1; then
-            echo "Tag v${VER} already exists"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          echo "skip=false" >> "$GITHUB_OUTPUT"
+          npm version "${{ steps.bump.outputs.type }}" -m "chore(release): %s"
 
       - name: Publish to GitHub Packages
-        if: ${{ steps.version.outputs.skip != 'true' }}
+        if: steps.bump.outputs.skip != 'true'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm publish
 
       - name: Push version commit and tag
-        if: ${{ steps.version.outputs.skip != 'true' }}
+        if: steps.bump.outputs.skip != 'true'
         run: |
-          set -euo pipefail
-          VER="${{ steps.version.outputs.version }}"
+          VER="$(node -p "require('./package.json').version")"
           git push || true
           if ! git rev-parse "v${VER}" >/dev/null 2>&1; then
             git tag "v${VER}"
           fi
           git push origin "v${VER}"
+          git push || true

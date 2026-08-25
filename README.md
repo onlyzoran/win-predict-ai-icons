@@ -129,16 +129,17 @@ npm run type-check
 
 ## Публикация в GitHub Packages
 
-После мержа в `main` workflow **Release package** сам поднимает версию и публикует пакет.
+После мержа в `main` workflow **Release package** публикует **уже зафиксированную** оркестратором версию в GitHub Packages и ставит тег `vX.Y.Z`.
+
+Версию и CHANGELOG перед merge поднимает релизер оркестратора (колонка Ready to Release):
 
 | Как задать bump | Результат |
 | --- | --- |
-| новые файлы в `src/icons/` с прошлого релиза | `minor` |
+| новые файлы в `src/icons/` | `minor` |
 | без новых иконок | `patch` |
-| `[major]` / `[minor]` / `[patch]` в сообщении коммита | принудительно |
-| `[skip release]` | не публиковать |
+| `[major]` / `[minor]` / `[patch]` в заголовке PR | принудительно |
 
-Вручную: **Actions → Release package → Run workflow** (выбор patch / minor / major).
+Вручную (без оркестратора): **Actions → Release package → Run workflow** (можно выбрать patch / minor / major или `none`, если версия уже в `package.json`).
 
 Локально (если нужно):
 

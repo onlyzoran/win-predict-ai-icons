@@ -6,15 +6,15 @@ on:
   workflow_dispatch:
     inputs:
       bump:
-        description: "Manual bump before publish (orchestrator normally bumps before merge)"
-        required: true
+        description: Manual bump before publish (orchestrator normally bumps before merge)
+        required: false
         type: choice
         options:
-          - none
+          - skip
           - patch
           - minor
           - major
-        default: none
+        default: skip
 
 permissions:
   contents: write
@@ -27,22 +27,23 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      !startsWith(github.event.head_commit.message, 'chore(release):')
+    if: ${{ github.event_name == 'workflow_dispatch' || !startsWith(github.event.head_commit.message || '', 'chore(release):') }}
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
           registry-url: https://npm.pkg.github.com
-          scope: '@onlyzoran'
+          scope: "@onlyzoran"
 
       - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure git
         run: |
@@ -50,26 +51,28 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Optional manual bump
-        if: github.event_name == 'workflow_dispatch' && inputs.bump != 'none'
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.bump != 'skip' }}
         run: npm version "${{ inputs.bump }}" -m "chore(release): %s"
 
       - name: Resolve version
         id: version
         env:
-          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          COMMIT_MSG: ${{ github.event.head_commit.message || '' }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ "${{ github.event_name }}" = "push" ] && echo "$COMMIT_MSG" | grep -qiE '\[skip release\]|\[no release\]'; then
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "push" ] && printf '%s' "$COMMIT_MSG" | grep -qiE '\[skip release\]|\[no release\]'; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           VER="$(node -p "require('./package.json').version")"
-          echo "version=${VER}" >> "$GITHUB_OUTPUT"
-
           NAME="$(node -p "require('./package.json').name")"
+          echo "version=${VER}" >> "$GITHUB_OUTPUT"
+          echo "Resolved ${NAME}@${VER}"
+
           if npm view "${NAME}@${VER}" version >/dev/null 2>&1; then
-            echo "Package ${NAME}@${VER} already published"
+            echo "Package already published"
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -80,19 +83,18 @@ jobs:
             exit 0
           fi
 
-      - name: Skip release
-        if: steps.version.outputs.skip == 'true'
-        run: echo "Release skipped"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
 
       - name: Publish to GitHub Packages
-        if: steps.version.outputs.skip != 'true'
+        if: ${{ steps.version.outputs.skip != 'true' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm publish
 
       - name: Push version commit and tag
-        if: steps.version.outputs.skip != 'true'
+        if: ${{ steps.version.outputs.skip != 'true' }}
         run: |
+          set -euo pipefail
           VER="${{ steps.version.outputs.version }}"
           git push || true
           if ! git rev-parse "v${VER}" >/dev/null 2>&1; then
